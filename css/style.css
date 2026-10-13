@@ -15,8 +15,10 @@
   --error-bg: #fdecea;
   --radius: 14px;
   --shadow: 0 2px 12px rgba(28, 38, 25, 0.07);
-  --font-body: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
-  --font-mono: Consolas, "Courier New", monospace;
+  --font-body: "Plus Jakarta Sans", "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+  --font-mono: "JetBrains Mono", Consolas, "Courier New", monospace;
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);  /* smooth "ease-out" curve for all animations */
+  --speed: 0.18s;
   color-scheme: light;
 }
 
@@ -29,13 +31,22 @@ body {
   margin: 0;
   font-family: var(--font-body);
   font-size: 15px;
-  line-height: 1.5;
+  font-weight: 500;
+  line-height: 1.55;
   background-color: var(--bg);
   color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 h2, h3, p {
   margin: 0;
+}
+
+/* Headings: slightly tighter letter spacing for a cleaner, modern look */
+h2, h3, .brand-name {
+  letter-spacing: -0.015em;
+  text-wrap: balance;
 }
 
 /* Visible keyboard focus on every control */
@@ -62,19 +73,18 @@ h2, h3, p {
   gap: 12px;
 }
 
-.brand-icon {
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  font-size: 1.4rem;
-  background-color: var(--green-light);
-  border-radius: 12px;
+/* DNSC school logo in the top bar */
+.brand-logo {
+  display: block;
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  border-radius: 50%;
 }
 
 .brand-name {
   font-size: 1.25rem;
-  font-weight: 700;
+  font-weight: 800;
   line-height: 1.2;
 }
 
@@ -133,8 +143,8 @@ h2, h3, p {
 }
 
 .card-title {
-  font-size: 1.1rem;
-  font-weight: 700;
+  font-size: 1.15rem;
+  font-weight: 800;
 }
 
 /* Titles without a header row still need space below */
@@ -164,11 +174,27 @@ h2, h3, p {
 .btn {
   padding: 10px 18px;
   font: inherit;
-  font-weight: 600;
+  font-weight: 700;
   border: none;
   border-radius: 10px;
   cursor: pointer;
-  transition: background-color 0.15s ease;
+  transition:
+    background-color var(--speed) var(--ease),
+    transform var(--speed) var(--ease),
+    box-shadow var(--speed) var(--ease);
+}
+
+/* Hover: button lifts slightly */
+.btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(46, 107, 31, 0.22);
+}
+
+/* Click: button presses down */
+.btn:active:not(:disabled) {
+  transform: translateY(0) scale(0.96);
+  box-shadow: 0 2px 6px rgba(46, 107, 31, 0.18);
+  transition-duration: 0.06s;
 }
 
 .btn:disabled {
@@ -176,22 +202,18 @@ h2, h3, p {
   cursor: not-allowed;
 }
 
-.btn-primary {
+/* Every button uses the "Confirm Payment" style: dark green, white text */
+.btn-primary,
+.btn-secondary,
+.btn-add {
   color: #ffffff;
   background-color: var(--green-dark);
 }
 
-.btn-primary:hover:not(:disabled) {
+.btn-primary:hover:not(:disabled),
+.btn-secondary:hover:not(:disabled),
+.btn-add:hover:not(:disabled) {
   background-color: var(--green-hover);
-}
-
-.btn-secondary {
-  color: var(--green-dark);
-  background-color: var(--green-light);
-}
-
-.btn-secondary:hover:not(:disabled) {
-  background-color: #b6ef8c;
 }
 
 .btn-link {
@@ -204,10 +226,16 @@ h2, h3, p {
   background: none;
   border: none;
   cursor: pointer;
+  transition: opacity var(--speed) var(--ease), transform var(--speed) var(--ease);
 }
 
 .btn-link:hover:not(:disabled) {
   text-decoration: underline;
+  transform: translateX(2px);
+}
+
+.btn-link:active:not(:disabled) {
+  opacity: 0.6;
 }
 
 .btn-link:disabled {
@@ -218,79 +246,120 @@ h2, h3, p {
 /* ===== Product grid ===== */
 .product-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 16px;
 }
 
+/* Photo for each product (matched by the card's data-product attribute) */
+.product-card[data-product="noodles"]  { --product-image: url("../images/noodles.jpg"); }
+.product-card[data-product="chips"]    { --product-image: url("../images/chips.jpg"); }
+.product-card[data-product="soda"]     { --product-image: url("../images/soda.jpg"); }
+.product-card[data-product="water"]    { --product-image: url("../images/water.jpg"); }
+.product-card[data-product="ballpen"]  { --product-image: url("../images/ballpen.jpg"); }
+.product-card[data-product="notebook"] { --product-image: url("../images/notebook.jpg"); }
+
 .product-card {
   position: relative;
+  isolation: isolate;          /* keeps the photo layers inside this card */
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 18px;
-  background-color: var(--surface);
-  border: 1px solid var(--border);
+  justify-content: flex-end;   /* text sits at the bottom, over the photo */
+  min-height: 240px;
+  overflow: hidden;
+  color: #ffffff;
+  background-color: var(--green-dark);
   border-radius: var(--radius);
-  transition: background-color 0.15s ease, border-color 0.15s ease;
+  box-shadow: var(--shadow);
+  transition:
+    transform var(--speed) var(--ease),
+    box-shadow var(--speed) var(--ease);
 }
 
-.product-icon {
-  display: grid;
-  place-items: center;
-  width: 64px;
-  height: 64px;
-  margin-bottom: 8px;
-  font-size: 2rem;
-  background-color: var(--green-tint);
-  border-radius: 50%;
+/* Layer 1: the product photo filling the whole card */
+.product-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background: var(--product-image) center / cover no-repeat;
+  transition: transform 0.4s var(--ease);
+}
+
+/* Layer 2: dark gradient overlay so the white text stays readable */
+.product-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    to top,
+    rgba(12, 22, 10, 0.92) 0%,
+    rgba(12, 22, 10, 0.6) 45%,
+    rgba(12, 22, 10, 0.05) 100%
+  );
+  transition: background var(--speed) var(--ease);
+}
+
+/* Hover: card lifts and the photo zooms in slightly */
+.product-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(28, 38, 25, 0.22);
+}
+
+.product-card:hover::before {
+  transform: scale(1.07);
+}
+
+.product-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 16px;
 }
 
 .product-name {
   font-size: 1rem;
-  font-weight: 600;
+  font-weight: 700;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
 .product-price {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--green-dark);
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--green-light);
   font-variant-numeric: tabular-nums;
 }
 
-.product-card .btn {
+/* Add to Cart button on top of the photo */
+.btn-add {
   margin-top: 10px;
 }
 
 .in-cart-badge {
   position: absolute;
-  top: 14px;
-  right: 14px;
-  padding: 2px 10px;
+  top: 12px;
+  right: 12px;
+  padding: 3px 10px;
   font-size: 0.75rem;
   font-weight: 700;
   color: var(--green-dark);
   background-color: var(--green-light);
   border-radius: 999px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* Product already in the cart turns dark green, like the reference design */
+/* Product already in the cart: overlay turns green, like the reference design */
 .product-card.in-cart {
-  color: #ffffff;
-  background-color: var(--green-dark);
-  border-color: var(--green-dark);
+  box-shadow: 0 0 0 3px var(--green-light), var(--shadow);
 }
 
-.product-card.in-cart .product-price {
-  color: var(--green-light);
-}
-
-.product-card.in-cart .product-icon {
-  background-color: rgba(255, 255, 255, 0.15);
-}
-
-.product-card.in-cart .btn-primary {
-  color: var(--green-dark);
-  background-color: var(--green-light);
+.product-card.in-cart::after {
+  background: linear-gradient(
+    to top,
+    rgba(46, 107, 31, 0.96) 0%,
+    rgba(46, 107, 31, 0.7) 45%,
+    rgba(46, 107, 31, 0.2) 100%
+  );
 }
 
 /* ===== Cart table ===== */
@@ -319,6 +388,12 @@ h2, h3, p {
   padding: 12px 6px;
   vertical-align: middle;
   border-bottom: 1px solid var(--border);
+  transition: background-color var(--speed) var(--ease);
+}
+
+/* Hover: highlight the cart row under the mouse */
+.cart-table tbody tr:hover td {
+  background-color: var(--green-tint);
 }
 
 .cart-item-name {
@@ -362,6 +437,16 @@ h2, h3, p {
   border: none;
   border-radius: 50%;
   cursor: pointer;
+  transition: background-color var(--speed) var(--ease), transform var(--speed) var(--ease);
+}
+
+.qty-control button:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.18);
+}
+
+.qty-control button:active:not(:disabled) {
+  transform: scale(0.85);
+  transition-duration: 0.06s;
 }
 
 .qty-control button:disabled {
@@ -439,8 +524,14 @@ h2, h3, p {
   border-radius: 10px;
 }
 
+.peso-input {
+  transition: border-color var(--speed) var(--ease), box-shadow var(--speed) var(--ease);
+}
+
+/* Typing in the payment box: green border with a soft glow */
 .peso-input:focus-within {
   border-color: var(--green-dark);
+  box-shadow: 0 0 0 4px rgba(46, 107, 31, 0.12);
 }
 
 .peso-input input {
@@ -468,6 +559,15 @@ h2, h3, p {
 .message-error {
   color: var(--error);
   background-color: var(--error-bg);
+  animation: shake 0.35s var(--ease);
+}
+
+/* Error message gives a small side-to-side shake when it appears */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25%      { transform: translateX(-5px); }
+  50%      { transform: translateX(5px); }
+  75%      { transform: translateX(-3px); }
 }
 
 /* "Order paid" note in the payment card */
@@ -583,15 +683,22 @@ h2, h3, p {
   height: 36px;
   font: inherit;
   font-size: 1rem;
-  color: var(--text);
-  background-color: var(--bg);
+  color: #ffffff;
+  background-color: var(--green-dark);
   border: none;
   border-radius: 50%;
   cursor: pointer;
+  transition: background-color var(--speed) var(--ease), transform var(--speed) var(--ease);
 }
 
+/* Hover: the ✕ turns a quarter circle */
 .btn-close:hover {
-  background-color: var(--border);
+  background-color: var(--green-hover);
+  transform: rotate(90deg);
+}
+
+.btn-close:active {
+  transform: rotate(90deg) scale(0.9);
 }
 
 .dialog-actions {
@@ -616,7 +723,8 @@ h2, h3, p {
 .receipt {
   padding: 20px;
   font-family: var(--font-mono);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 400;
   background-color: var(--surface);
   border: 1px dashed var(--muted);
   border-radius: 6px;
@@ -701,9 +809,12 @@ h2, h3, p {
   to   { transform: translateY(0); opacity: 1; }
 }
 
+/* Users who turned off animations in their system settings get none */
 @media (prefers-reduced-motion: reduce) {
-  .toast, .receipt-dialog[open] { animation: none; }
-  .btn, .product-card { transition: none; }
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
 }
 
 /* ===== Narrow screens: one column ===== */
@@ -728,7 +839,11 @@ h2, h3, p {
   }
 
   .product-card {
-    padding: 14px;
+    min-height: 200px;
+  }
+
+  .product-info {
+    padding: 12px;
   }
 
   .receipt,

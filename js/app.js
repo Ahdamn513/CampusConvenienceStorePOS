@@ -6,13 +6,14 @@
 "use strict"; // Catches common mistakes, like undeclared variables
 
 // ===== Product catalog (prices stored in centavos to avoid floating-point errors) =====
+// Each product's photo is set in style.css using its id (e.g. images/noodles.jpg)
 const PRODUCTS = [
-  { id: "noodles",  name: "Instant Noodles",  icon: "🍜", priceCents: 1800 },
-  { id: "chips",    name: "Potato Chips",     icon: "🥔", priceCents: 2500 },
-  { id: "soda",     name: "Soft Drink (Can)", icon: "🥤", priceCents: 2500 },
-  { id: "water",    name: "Bottled Water",    icon: "💧", priceCents: 2000 },
-  { id: "ballpen",  name: "Ballpen (piece)",  icon: "🖊️", priceCents: 1200 },
-  { id: "notebook", name: "Notebook (piece)", icon: "📓", priceCents: 3500 },
+  { id: "noodles",  name: "Instant Noodles",  priceCents: 1800 },
+  { id: "chips",    name: "Potato Chips",     priceCents: 2500 },
+  { id: "soda",     name: "Soft Drink (Can)", priceCents: 2500 },
+  { id: "water",    name: "Bottled Water",    priceCents: 2000 },
+  { id: "ballpen",  name: "Ballpen (piece)",  priceCents: 1200 },
+  { id: "notebook", name: "Notebook (piece)", priceCents: 3500 },
 ];
 
 const MAX_QUANTITY = 99;
@@ -185,15 +186,17 @@ function renderProducts() {
     const badge = item ? `<span class="in-cart-badge">${item.quantity} in cart</span>` : "";
     const disabled = isPaid ? "disabled" : "";
 
+    // data-product picks the background photo in style.css
     return `
-      <article class="${cardClass}">
+      <article class="${cardClass}" data-product="${product.id}">
         ${badge}
-        <span class="product-icon" aria-hidden="true">${product.icon}</span>
-        <h3 class="product-name">${product.name}</h3>
-        <p class="product-price">${formatPeso(product.priceCents)}</p>
-        <button type="button" class="btn btn-primary" data-action="add" data-id="${product.id}" ${disabled}>
-          Add to Cart
-        </button>
+        <div class="product-info">
+          <h3 class="product-name">${product.name}</h3>
+          <p class="product-price">${formatPeso(product.priceCents)}</p>
+          <button type="button" class="btn btn-add" data-action="add" data-id="${product.id}" ${disabled}>
+            Add to Cart
+          </button>
+        </div>
       </article>`;
   }).join("");
 }
@@ -351,6 +354,9 @@ function completeTransaction(totalCents, amountPaidCents) {
 
 function showPaymentError(message) {
   elements.paymentMessage.textContent = message;
+  // Hide, force the browser to redraw, then show again so the shake animation replays every time
+  elements.paymentMessage.hidden = true;
+  void elements.paymentMessage.offsetWidth;
   elements.paymentMessage.hidden = false;
   elements.amountInput.setAttribute("aria-invalid", "true");
   elements.amountInput.focus();

@@ -35,6 +35,7 @@ CampusConvenienceStorePOS/
 │   └── style.css       # Layout and styling
 ├── js/
 │   └── app.js          # Cart, computation, validation, and receipt logic
+├── images/             # Product photos used as card backgrounds
 └── docs/
     ├── AI_LOG.md        # AI-assisted development documentation
     ├── REQUIREMENTS.md  # Requirements analysis
