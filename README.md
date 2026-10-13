@@ -16,7 +16,7 @@ A browser-based point-of-sale system for a small campus convenience store sellin
   - Insufficient: "Insufficient payment. Please enter at least ₱X.XX."
   - Empty cart: "Your cart is empty. Please add at least one item."
 - Change computation (Change = Amount Paid − Total Amount)
-- Payment confirmation and digital receipt with transaction number (TXN-YYYYMMDD-XXXX) and date/time
+- Payment confirmation and a digital receipt shown in a pop-up overlay, with transaction number (TXN-YYYYMMDD-XXXX) and date/time (close with ✕, Esc, or clicking outside; reopen with View Receipt)
 - New Transaction button that clears the cart, payment, messages, and receipt
 - Success feedback when items are added or removed
 - Double payment prevention (cart and payment are locked after a successful payment)

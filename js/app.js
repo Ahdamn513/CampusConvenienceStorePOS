@@ -48,8 +48,9 @@ function cacheElements() {
   elements.confirmButton = document.getElementById("confirm-payment");
   elements.paymentMessage = document.getElementById("payment-message");
   elements.paymentConfirmation = document.getElementById("payment-confirmation");
-  elements.receiptSection = document.getElementById("receipt-section");
+  elements.receiptDialog = document.getElementById("receipt-dialog");
   elements.receiptContainer = document.getElementById("receipt-container");
+  elements.closeReceiptButton = document.getElementById("close-receipt");
   elements.newTransactionButton = document.getElementById("new-transaction");
   elements.toast = document.getElementById("toast");
 }
@@ -340,8 +341,7 @@ function completeTransaction(totalCents, amountPaidCents) {
   renderConfirmation(transaction);
   renderReceipt(transaction);
   renderAll();
-  elements.newTransactionButton.hidden = false;
-  elements.receiptSection.scrollIntoView({ behavior: "smooth", block: "start" });
+  openReceipt();
 }
 
 function showPaymentError(message) {
@@ -369,7 +369,11 @@ function renderConfirmation(transaction) {
       <div><dt>Total Amount Due</dt><dd>${formatPeso(transaction.totalCents)}</dd></div>
       <div><dt>Amount Paid</dt><dd>${formatPeso(transaction.amountPaidCents)}</dd></div>
       <div class="highlight-row"><dt>Change</dt><dd>${formatPeso(transaction.changeCents)}</dd></div>
-    </dl>`;
+    </dl>
+    <div class="confirmation-actions">
+      <button type="button" class="btn btn-secondary" data-action="view-receipt">View Receipt</button>
+      <button type="button" class="btn btn-primary" data-action="new-transaction">New Transaction</button>
+    </div>`;
   elements.paymentConfirmation.hidden = false;
 }
 
@@ -412,9 +416,37 @@ function renderReceipt(transaction) {
     </div>`;
 }
 
-function renderEmptyReceipt() {
-  elements.receiptContainer.innerHTML =
-    `<p class="empty-state">The receipt will appear here after a successful payment.</p>`;
+// ============================================
+// Receipt overlay (uses the built-in <dialog> element)
+// ============================================
+
+function openReceipt() {
+  if (!elements.receiptDialog.open) {
+    elements.receiptDialog.showModal(); // Shows the overlay and dims the page behind it
+  }
+  elements.closeReceiptButton.focus();
+}
+
+function closeReceipt() {
+  if (elements.receiptDialog.open) {
+    elements.receiptDialog.close();
+  }
+}
+
+// Clicking the dark area outside the receipt closes it
+function handleDialogBackdropClick(event) {
+  if (event.target === elements.receiptDialog) {
+    closeReceipt();
+  }
+}
+
+// Buttons inside the "Payment successful" box
+function handleConfirmationClick(event) {
+  const button = event.target.closest("button[data-action]");
+  if (!button) return;
+
+  if (button.dataset.action === "view-receipt") openReceipt();
+  if (button.dataset.action === "new-transaction") startNewTransaction();
 }
 
 // ============================================
@@ -428,8 +460,8 @@ function startNewTransaction() {
   clearPaymentMessage();
   elements.paymentConfirmation.hidden = true;
   elements.paymentConfirmation.innerHTML = "";
-  elements.newTransactionButton.hidden = true;
-  renderEmptyReceipt();
+  elements.receiptContainer.innerHTML = "";
+  closeReceipt();
   renderAll();
   showToast(MESSAGES.newTransaction);
   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -478,6 +510,10 @@ function bindEvents() {
   elements.paymentForm.addEventListener("submit", handlePaymentSubmit);
   elements.amountInput.addEventListener("input", clearPaymentMessage);
   elements.newTransactionButton.addEventListener("click", startNewTransaction);
+  elements.paymentConfirmation.addEventListener("click", handleConfirmationClick);
+  elements.closeReceiptButton.addEventListener("click", closeReceipt);
+  elements.receiptDialog.addEventListener("click", handleDialogBackdropClick);
+  // The Esc key closes a <dialog> automatically
 }
 
 // ============================================
@@ -487,6 +523,5 @@ function bindEvents() {
 document.addEventListener("DOMContentLoaded", () => {
   cacheElements();
   bindEvents();
-  renderEmptyReceipt();
   renderAll();
 });

@@ -1,4 +1,4 @@
-/* Layout: order panel on the left, product grid on the right, receipt slip across the bottom. */
+/* Layout: order panel on the left, product grid on the right, receipt slip in a pop-up overlay. */
 
 /* ===== Theme variables ===== */
 :root {
@@ -95,9 +95,7 @@ h2, h3, p {
 .pos-layout {
   display: grid;
   grid-template-columns: minmax(0, 440px) minmax(0, 1fr);
-  grid-template-areas:
-    "order   products"
-    "receipt receipt";
+  grid-template-areas: "order products";
   gap: 20px;
   max-width: 1280px;
   margin: 0 auto;
@@ -115,10 +113,6 @@ h2, h3, p {
 .product-column {
   grid-area: products;
   align-self: start;
-}
-
-.receipt-row {
-  grid-area: receipt;
 }
 
 /* ===== Cards ===== */
@@ -523,11 +517,80 @@ h2, h3, p {
   color: var(--green-dark);
 }
 
+.confirmation-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+/* ===== Receipt overlay (native <dialog>) ===== */
+.receipt-dialog {
+  width: min(520px, calc(100% - 32px));
+  max-height: calc(100% - 32px);
+  padding: 0;
+  overflow-y: auto;
+  color: var(--text);
+  background-color: var(--surface);
+  border: none;
+  border-radius: var(--radius);
+  box-shadow: 0 20px 60px rgba(28, 38, 25, 0.3);
+}
+
+/* Dark see-through layer behind the overlay */
+.receipt-dialog::backdrop {
+  background-color: rgba(28, 38, 25, 0.55);
+}
+
+.receipt-dialog[open] {
+  animation: dialog-in 0.2s ease-out;
+}
+
+@keyframes dialog-in {
+  from { transform: translateY(16px) scale(0.98); opacity: 0; }
+  to   { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.dialog-body {
+  padding: 20px;
+}
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.btn-close {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  font: inherit;
+  font-size: 1rem;
+  color: var(--text);
+  background-color: var(--bg);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.btn-close:hover {
+  background-color: var(--border);
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+}
+
 /* ===== Receipt slip ===== */
 .receipt {
-  max-width: 460px;
-  margin: 0 auto;
-  padding: 24px;
+  padding: 20px;
   font-family: var(--font-mono);
   font-size: 0.9rem;
   background-color: var(--surface);
@@ -615,7 +678,7 @@ h2, h3, p {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .toast { animation: none; }
+  .toast, .receipt-dialog[open] { animation: none; }
   .btn, .product-card { transition: none; }
 }
 
@@ -625,8 +688,7 @@ h2, h3, p {
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas:
       "products"
-      "order"
-      "receipt";
+      "order";
     padding: 16px;
   }
 
@@ -645,7 +707,8 @@ h2, h3, p {
     padding: 14px;
   }
 
-  .receipt {
-    padding: 16px;
+  .receipt,
+  .dialog-body {
+    padding: 14px;
   }
 }

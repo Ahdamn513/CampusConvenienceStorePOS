@@ -59,20 +59,27 @@
     </div>
 
     <!-- ===== RIGHT COLUMN: products (Step 1) ===== -->
+    <!-- Receipt is shown as a pop-up overlay, see <dialog> below -->
     <section id="product-section" class="card product-column" aria-labelledby="product-title">
       <h2 id="product-title" class="card-title">Products</h2>
       <div id="product-grid" class="product-grid"></div>
     </section>
 
-    <!-- ===== BOTTOM ROW: receipt (Step 7) ===== -->
-    <section id="receipt-section" class="card receipt-row" aria-labelledby="receipt-title">
-      <div class="card-header">
+  </main>
+
+  <!-- ===== Receipt overlay (Step 7): opens after a successful payment ===== -->
+  <dialog id="receipt-dialog" class="receipt-dialog" aria-labelledby="receipt-title">
+    <div class="dialog-body">
+      <div class="dialog-header">
         <h2 id="receipt-title" class="card-title">Receipt</h2>
-        <button type="button" id="new-transaction" class="btn btn-secondary" hidden>New Transaction</button>
+        <button type="button" id="close-receipt" class="btn-close" aria-label="Close receipt">✕</button>
       </div>
       <div id="receipt-container"></div>
-    </section>
-  </main>
+      <div class="dialog-actions">
+        <button type="button" id="new-transaction" class="btn btn-primary">New Transaction</button>
+      </div>
+    </div>
+  </dialog>
 
   <!-- Small pop-up message for success feedback -->
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
