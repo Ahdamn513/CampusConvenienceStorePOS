@@ -250,14 +250,7 @@ h2, h3, .brand-name {
   gap: 16px;
 }
 
-/* Photo for each product (matched by the card's data-product attribute) */
-.product-card[data-product="noodles"]  { --product-image: url("../images/noodles.jpg"); }
-.product-card[data-product="chips"]    { --product-image: url("../images/chips.jpg"); }
-.product-card[data-product="soda"]     { --product-image: url("../images/soda.jpg"); }
-.product-card[data-product="water"]    { --product-image: url("../images/water.jpg"); }
-.product-card[data-product="ballpen"]  { --product-image: url("../images/ballpen.jpg"); }
-.product-card[data-product="notebook"] { --product-image: url("../images/notebook.jpg"); }
-
+/* Each card's photo comes from --product-image, set by app.js from the PRODUCTS list */
 .product-card {
   position: relative;
   isolation: isolate;          /* keeps the photo layers inside this card */
@@ -522,9 +515,6 @@ h2, h3, .brand-name {
   font-weight: 700;
   border: 2px solid var(--border);
   border-radius: 10px;
-}
-
-.peso-input {
   transition: border-color var(--speed) var(--ease), box-shadow var(--speed) var(--ease);
 }
 

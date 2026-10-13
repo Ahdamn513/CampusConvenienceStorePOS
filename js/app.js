@@ -6,14 +6,14 @@
 "use strict"; // Catches common mistakes, like undeclared variables
 
 // ===== Product catalog (prices stored in centavos to avoid floating-point errors) =====
-// Each product's photo is set in style.css using its id (e.g. images/noodles.jpg)
+// Each product's photo is in the images folder (path is relative to index.html)
 const PRODUCTS = [
-  { id: "noodles",  name: "Instant Noodles",  priceCents: 1800 },
-  { id: "chips",    name: "Potato Chips",     priceCents: 2500 },
-  { id: "soda",     name: "Soft Drink (Can)", priceCents: 2500 },
-  { id: "water",    name: "Bottled Water",    priceCents: 2000 },
-  { id: "ballpen",  name: "Ballpen (piece)",  priceCents: 1200 },
-  { id: "notebook", name: "Notebook (piece)", priceCents: 3500 },
+  { id: "noodles",  name: "Instant Noodles",  priceCents: 1800, image: "images/noodles.jpg" },
+  { id: "chips",    name: "Potato Chips",     priceCents: 2500, image: "images/chips.jpg" },
+  { id: "soda",     name: "Soft Drink (Can)", priceCents: 2500, image: "images/soda.jpg" },
+  { id: "water",    name: "Bottled Water",    priceCents: 2000, image: "images/water.jpg" },
+  { id: "ballpen",  name: "Ballpen (piece)",  priceCents: 1200, image: "images/ballpen.jpg" },
+  { id: "notebook", name: "Notebook (piece)", priceCents: 3500, image: "images/notebook.jpg" },
 ];
 
 const MAX_QUANTITY = 99;
@@ -78,14 +78,18 @@ function findCartItem(productId) {
   return cart.find((item) => item.productId === productId);
 }
 
+// Joins each cart item with its product details, so rendering code doesn't repeat the lookup
 // Subtotal = Unit Price × Quantity
-function getSubtotalCents(item) {
-  return findProduct(item.productId).priceCents * item.quantity;
+function getCartLines() {
+  return cart.map((item) => {
+    const product = findProduct(item.productId);
+    return { product, quantity: item.quantity, subtotalCents: product.priceCents * item.quantity };
+  });
 }
 
 // Total Amount = sum of all subtotals
 function getTotalCents() {
-  return cart.reduce((sum, item) => sum + getSubtotalCents(item), 0);
+  return getCartLines().reduce((sum, line) => sum + line.subtotalCents, 0);
 }
 
 function getTotalQuantity() {
@@ -109,63 +113,64 @@ function formatDateTime(date) {
 // Cart actions
 // ============================================
 
-function addToCart(productId) {
-  if (isPaid) return; // Cart is locked after payment
-  const product = findProduct(productId);
-  const item = findCartItem(productId);
-
-  if (item && item.quantity >= MAX_QUANTITY) {
-    showToast(MESSAGES.maxReached(product.name));
-    return;
-  }
-
-  if (item) {
-    item.quantity += 1; // Already in cart: increase quantity instead of duplicating
-  } else {
-    cart.push({ productId, quantity: 1 });
-  }
-
+// Runs a cart change, then refreshes the screen. Does nothing once paid (cart is locked).
+// The change function returns false when nothing changed, which skips the refresh.
+function updateCart(change) {
+  if (isPaid) return;
+  if (change() === false) return;
   clearPaymentMessage();
-  showToast(MESSAGES.added(product.name));
   renderAll();
+}
+
+// Adds 1 to an item already in the cart; returns false if it is at the maximum
+function incrementItem(item) {
+  if (item.quantity >= MAX_QUANTITY) {
+    showToast(MESSAGES.maxReached(findProduct(item.productId).name));
+    return false;
+  }
+  item.quantity += 1;
+  return true;
+}
+
+function addToCart(productId) {
+  updateCart(() => {
+    const item = findCartItem(productId);
+    if (item) {
+      // Already in cart: increase quantity instead of duplicating
+      if (!incrementItem(item)) return false;
+    } else {
+      cart.push({ productId, quantity: 1 });
+    }
+    showToast(MESSAGES.added(findProduct(productId).name));
+  });
 }
 
 function increaseQuantity(productId) {
-  if (isPaid) return;
-  const item = findCartItem(productId);
-  if (!item) return;
-
-  if (item.quantity >= MAX_QUANTITY) {
-    showToast(MESSAGES.maxReached(findProduct(productId).name));
-    return;
-  }
-  item.quantity += 1;
-  clearPaymentMessage();
-  renderAll();
+  updateCart(() => {
+    const item = findCartItem(productId);
+    return item ? incrementItem(item) : false;
+  });
 }
 
 function decreaseQuantity(productId) {
-  if (isPaid) return;
   const item = findCartItem(productId);
   if (!item) return;
 
   // Quantity never reaches zero: decreasing from 1 removes the item
-  if (item.quantity > 1) {
-    item.quantity -= 1;
-    clearPaymentMessage();
-    renderAll();
-  } else {
+  if (item.quantity === 1) {
     removeFromCart(productId);
+    return;
   }
+  updateCart(() => {
+    item.quantity -= 1;
+  });
 }
 
 function removeFromCart(productId) {
-  if (isPaid) return;
-  const product = findProduct(productId);
-  cart = cart.filter((item) => item.productId !== productId);
-  clearPaymentMessage();
-  showToast(MESSAGES.removed(product.name));
-  renderAll();
+  updateCart(() => {
+    cart = cart.filter((item) => item.productId !== productId);
+    showToast(MESSAGES.removed(findProduct(productId).name));
+  });
 }
 
 // ============================================
@@ -185,10 +190,12 @@ function renderProducts() {
     const cardClass = item ? "product-card in-cart" : "product-card";
     const badge = item ? `<span class="in-cart-badge">${item.quantity} in cart</span>` : "";
     const disabled = isPaid ? "disabled" : "";
+    // Full URL, so the path works the same no matter which file reads the CSS variable
+    const imageUrl = new URL(product.image, document.baseURI).href;
 
-    // data-product picks the background photo in style.css
+    // --product-image is the background photo used by .product-card::before in style.css
     return `
-      <article class="${cardClass}" data-product="${product.id}">
+      <article class="${cardClass}" style="--product-image: url('${imageUrl}')">
         ${badge}
         <div class="product-info">
           <h3 class="product-name">${product.name}</h3>
@@ -212,9 +219,7 @@ function renderCart() {
   }
 
   const disabled = isPaid ? "disabled" : "";
-  const rows = cart.map((item) => {
-    const product = findProduct(item.productId);
-    return `
+  const rows = getCartLines().map(({ product, quantity, subtotalCents }) => `
       <tr>
         <td>
           <span class="cart-item-name">${product.name}</span>
@@ -225,14 +230,13 @@ function renderCart() {
           <div class="qty-control">
             <button type="button" data-action="decrease" data-id="${product.id}"
                     aria-label="Decrease ${product.name}" ${disabled}>−</button>
-            <span class="qty-value">${item.quantity}</span>
+            <span class="qty-value">${quantity}</span>
             <button type="button" data-action="increase" data-id="${product.id}"
                     aria-label="Increase ${product.name}" ${disabled}>+</button>
           </div>
         </td>
-        <td class="num">${formatPeso(getSubtotalCents(item))}</td>
-      </tr>`;
-  }).join("");
+        <td class="num">${formatPeso(subtotalCents)}</td>
+      </tr>`).join("");
 
   elements.cartContainer.innerHTML = `
     <div class="table-wrap">
@@ -251,10 +255,9 @@ function renderCart() {
 }
 
 function renderSummary() {
-  const items = cart.map((item) => {
-    const product = findProduct(item.productId);
-    return `<li><span>${item.quantity} × ${product.name}</span><span>${formatPeso(getSubtotalCents(item))}</span></li>`;
-  }).join("");
+  const items = getCartLines().map(({ product, quantity, subtotalCents }) =>
+    `<li><span>${quantity} × ${product.name}</span><span>${formatPeso(subtotalCents)}</span></li>`
+  ).join("");
 
   const list = cart.length > 0
     ? `<ul class="summary-list">${items}</ul>`
@@ -330,15 +333,12 @@ function completeTransaction(totalCents, amountPaidCents) {
   const transaction = {
     reference: generateReference(now),
     dateTime: formatDateTime(now),
-    items: cart.map((item) => {
-      const product = findProduct(item.productId);
-      return {
-        name: product.name,
-        quantity: item.quantity,
-        unitPriceCents: product.priceCents,
-        subtotalCents: getSubtotalCents(item),
-      };
-    }),
+    items: getCartLines().map(({ product, quantity, subtotalCents }) => ({
+      name: product.name,
+      quantity,
+      unitPriceCents: product.priceCents,
+      subtotalCents,
+    })),
     totalCents,
     amountPaidCents,
     changeCents: amountPaidCents - totalCents, // Change = Amount Paid − Total Amount
@@ -372,14 +372,20 @@ function clearPaymentMessage() {
 // Confirmation and receipt
 // ============================================
 
+// One label/value row inside a .detail-list; highlighted rows are larger and green
+function detailRow(label, value, isHighlighted = false) {
+  const rowClass = isHighlighted ? ` class="highlight-row"` : "";
+  return `<div${rowClass}><dt>${label}</dt><dd>${value}</dd></div>`;
+}
+
 function renderConfirmation(transaction) {
   elements.paymentConfirmation.innerHTML = `
     <p class="confirmation-title">✓ Payment successful</p>
     <dl class="detail-list">
-      <div><dt>Transaction No.</dt><dd>${transaction.reference}</dd></div>
-      <div><dt>Total Amount Due</dt><dd>${formatPeso(transaction.totalCents)}</dd></div>
-      <div><dt>Amount Paid</dt><dd>${formatPeso(transaction.amountPaidCents)}</dd></div>
-      <div class="highlight-row"><dt>Change</dt><dd>${formatPeso(transaction.changeCents)}</dd></div>
+      ${detailRow("Transaction No.", transaction.reference)}
+      ${detailRow("Total Amount Due", formatPeso(transaction.totalCents))}
+      ${detailRow("Amount Paid", formatPeso(transaction.amountPaidCents))}
+      ${detailRow("Change", formatPeso(transaction.changeCents), true)}
     </dl>`;
 }
 
@@ -399,8 +405,8 @@ function renderReceipt(transaction) {
         <p>Digital Receipt</p>
       </header>
       <dl class="detail-list">
-        <div><dt>Transaction No.</dt><dd>${transaction.reference}</dd></div>
-        <div><dt>Date &amp; Time</dt><dd>${transaction.dateTime}</dd></div>
+        ${detailRow("Transaction No.", transaction.reference)}
+        ${detailRow("Date &amp; Time", transaction.dateTime)}
       </dl>
       <table class="receipt-table">
         <thead>
@@ -414,9 +420,9 @@ function renderReceipt(transaction) {
         <tbody>${rows}</tbody>
       </table>
       <dl class="detail-list receipt-totals">
-        <div class="highlight-row"><dt>TOTAL AMOUNT DUE</dt><dd>${formatPeso(transaction.totalCents)}</dd></div>
-        <div><dt>Amount Paid (Cash)</dt><dd>${formatPeso(transaction.amountPaidCents)}</dd></div>
-        <div class="highlight-row"><dt>Change</dt><dd>${formatPeso(transaction.changeCents)}</dd></div>
+        ${detailRow("TOTAL AMOUNT DUE", formatPeso(transaction.totalCents), true)}
+        ${detailRow("Amount Paid (Cash)", formatPeso(transaction.amountPaidCents))}
+        ${detailRow("Change", formatPeso(transaction.changeCents), true)}
       </dl>
       <p class="receipt-footer">Payment confirmed. Thank you for shopping!</p>
     </div>`;
