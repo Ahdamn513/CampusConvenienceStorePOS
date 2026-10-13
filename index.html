@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Campus Convenience Store POS</title>
+  <!-- External stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- ===== Top bar ===== -->
+  <header class="top-bar">
+    <div class="brand">
+      <span class="brand-icon" aria-hidden="true">🏪</span>
+      <div>
+        <p class="brand-name">Campus Convenience Store</p>
+        <p class="brand-tagline">Snacks · Drinks · School Supplies</p>
+      </div>
+    </div>
+    <span class="top-bar-label">Point of Sale</span>
+  </header>
+
+  <main class="pos-layout">
+    <!-- ===== LEFT COLUMN: order, summary, payment ===== -->
+    <div class="order-column">
+      <!-- Step 2-3: Shopping cart -->
+      <section id="cart-section" class="card" aria-labelledby="cart-title">
+        <div class="card-header">
+          <h2 id="cart-title" class="card-title">Current Order</h2>
+          <span id="cart-count" class="chip">0 items</span>
+        </div>
+        <div id="cart-container"></div>
+      </section>
+
+      <!-- Step 3: Order summary -->
+      <section id="summary-section" class="card" aria-labelledby="summary-title">
+        <h2 id="summary-title" class="card-title">Order Summary</h2>
+        <div id="summary-container"></div>
+      </section>
+
+      <!-- Step 4-6: Payment -->
+      <section id="payment-section" class="card" aria-labelledby="payment-title">
+        <h2 id="payment-title" class="card-title">Payment</h2>
+        <!-- novalidate: our JavaScript handles all validation messages -->
+        <form id="payment-form" class="payment-form" novalidate>
+          <label for="amount-paid" class="field-label">Amount Paid (Cash)</label>
+          <div class="payment-row">
+            <div class="peso-input">
+              <span aria-hidden="true">₱</span>
+              <input type="number" id="amount-paid" min="0" step="0.01" placeholder="0.00"
+                     inputmode="decimal" aria-describedby="payment-message">
+            </div>
+            <button type="submit" id="confirm-payment" class="btn btn-primary">Confirm Payment</button>
+          </div>
+          <p id="payment-message" class="message message-error" role="alert" hidden></p>
+        </form>
+        <div id="payment-confirmation" class="confirmation" hidden></div>
+      </section>
+    </div>
+
+    <!-- ===== RIGHT COLUMN: products (Step 1) ===== -->
+    <section id="product-section" class="card product-column" aria-labelledby="product-title">
+      <h2 id="product-title" class="card-title">Products</h2>
+      <div id="product-grid" class="product-grid"></div>
+    </section>
+
+    <!-- ===== BOTTOM ROW: receipt (Step 7) ===== -->
+    <section id="receipt-section" class="card receipt-row" aria-labelledby="receipt-title">
+      <div class="card-header">
+        <h2 id="receipt-title" class="card-title">Receipt</h2>
+        <button type="button" id="new-transaction" class="btn btn-secondary" hidden>New Transaction</button>
+      </div>
+      <div id="receipt-container"></div>
+    </section>
+  </main>
+
+  <!-- Small pop-up message for success feedback -->
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+  <!-- Script loads last so all elements exist before it runs -->
+  <script src="js/app.js"></script>
+</body>
+</html>
