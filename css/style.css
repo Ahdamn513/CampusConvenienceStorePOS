@@ -470,9 +470,29 @@ h2, h3, p {
   background-color: var(--error-bg);
 }
 
-/* Payment confirmation box */
-.confirmation {
+/* "Order paid" note in the payment card */
+.paid-actions {
   margin-top: 16px;
+  padding: 14px;
+  background-color: var(--green-tint);
+  border-radius: 10px;
+}
+
+.paid-note {
+  margin-bottom: 10px;
+  font-weight: 600;
+  color: var(--green-dark);
+}
+
+.paid-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* Payment confirmation box (inside the receipt overlay) */
+.confirmation {
+  margin-bottom: 16px;
   padding: 16px;
   background-color: var(--green-tint);
   border: 2px solid var(--green-dark);
@@ -515,13 +535,6 @@ h2, h3, p {
   font-size: 1.1rem;
   font-weight: 700;
   color: var(--green-dark);
-}
-
-.confirmation-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 14px;
 }
 
 /* ===== Receipt overlay (native <dialog>) ===== */
@@ -584,8 +597,19 @@ h2, h3, p {
 .dialog-actions {
   display: flex;
   justify-content: flex-end;
+  flex-wrap: wrap;
   gap: 10px;
   margin-top: 16px;
+}
+
+.dialog-actions .btn {
+  flex: 0 1 auto;
+}
+
+@media (max-width: 480px) {
+  .dialog-actions .btn {
+    flex: 1 1 0;
+  }
 }
 
 /* ===== Receipt slip ===== */

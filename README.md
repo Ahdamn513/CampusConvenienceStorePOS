@@ -16,8 +16,8 @@ A browser-based point-of-sale system for a small campus convenience store sellin
   - Insufficient: "Insufficient payment. Please enter at least ₱X.XX."
   - Empty cart: "Your cart is empty. Please add at least one item."
 - Change computation (Change = Amount Paid − Total Amount)
-- Payment confirmation and a digital receipt shown in a pop-up overlay, with transaction number (TXN-YYYYMMDD-XXXX) and date/time (close with ✕, Esc, or clicking outside; reopen with View Receipt)
-- New Transaction button that clears the cart, payment, messages, and receipt
+- "Payment successful" confirmation and digital receipt shown together in a pop-up overlay, with transaction number (TXN-YYYYMMDD-XXXX) and date/time (close with ✕, Close, Esc, or clicking outside; reopen with View Receipt)
+- Next Order button that starts a new transaction, clearing the cart, payment, messages, and receipt
 - Success feedback when items are added or removed
 - Double payment prevention (cart and payment are locked after a successful payment)
 
@@ -58,6 +58,6 @@ HTML5, CSS3, vanilla JavaScript, Git, GitHub, VS Code, and Claude (AI assistant)
 | 9 | Insufficient payment | "Insufficient payment. Please enter at least ₱X.XX." |
 | 10 | Pay with an empty cart | "Your cart is empty. Please add at least one item." |
 | 11 | Sufficient payment | Confirmation and receipt shown with correct change |
-| 12 | New Transaction | Cart, payment, messages, and receipt are cleared |
+| 12 | Next Order (new transaction) | Cart, payment, messages, and receipt are cleared |
 
 **Worked example:** 2 × Instant Noodles (₱36.00) + 1 × Potato Chips (₱25.00) + 1 × Bottled Water (₱20.00) = ₱81.00. Paid ₱100.00 → Change ₱19.00.

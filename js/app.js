@@ -27,7 +27,7 @@ const MESSAGES = {
   added: (name) => `${name} added to cart.`,
   removed: (name) => `${name} removed from cart.`,
   maxReached: (name) => `${name} is already at the maximum quantity of ${MAX_QUANTITY}.`,
-  newTransaction: "New transaction started.",
+  newTransaction: "New transaction started. Ready for the next order.",
 };
 
 // ===== Application state (kept in memory, no database) =====
@@ -48,10 +48,14 @@ function cacheElements() {
   elements.confirmButton = document.getElementById("confirm-payment");
   elements.paymentMessage = document.getElementById("payment-message");
   elements.paymentConfirmation = document.getElementById("payment-confirmation");
+  elements.paidActions = document.getElementById("paid-actions");
+  elements.viewReceiptButton = document.getElementById("view-receipt");
+  elements.nextOrderPanelButton = document.getElementById("next-order-panel");
   elements.receiptDialog = document.getElementById("receipt-dialog");
   elements.receiptContainer = document.getElementById("receipt-container");
   elements.closeReceiptButton = document.getElementById("close-receipt");
-  elements.newTransactionButton = document.getElementById("new-transaction");
+  elements.closeReceiptSecondaryButton = document.getElementById("close-receipt-secondary");
+  elements.nextOrderButton = document.getElementById("next-order");
   elements.toast = document.getElementById("toast");
 }
 
@@ -263,6 +267,7 @@ function renderSummary() {
 function updatePaymentControls() {
   elements.amountInput.disabled = isPaid;
   elements.confirmButton.disabled = isPaid;
+  elements.paidActions.hidden = !isPaid;
 }
 
 // ============================================
@@ -369,12 +374,7 @@ function renderConfirmation(transaction) {
       <div><dt>Total Amount Due</dt><dd>${formatPeso(transaction.totalCents)}</dd></div>
       <div><dt>Amount Paid</dt><dd>${formatPeso(transaction.amountPaidCents)}</dd></div>
       <div class="highlight-row"><dt>Change</dt><dd>${formatPeso(transaction.changeCents)}</dd></div>
-    </dl>
-    <div class="confirmation-actions">
-      <button type="button" class="btn btn-secondary" data-action="view-receipt">View Receipt</button>
-      <button type="button" class="btn btn-primary" data-action="new-transaction">New Transaction</button>
-    </div>`;
-  elements.paymentConfirmation.hidden = false;
+    </dl>`;
 }
 
 function renderReceipt(transaction) {
@@ -440,15 +440,6 @@ function handleDialogBackdropClick(event) {
   }
 }
 
-// Buttons inside the "Payment successful" box
-function handleConfirmationClick(event) {
-  const button = event.target.closest("button[data-action]");
-  if (!button) return;
-
-  if (button.dataset.action === "view-receipt") openReceipt();
-  if (button.dataset.action === "new-transaction") startNewTransaction();
-}
-
 // ============================================
 // New transaction
 // ============================================
@@ -458,7 +449,6 @@ function startNewTransaction() {
   isPaid = false;
   elements.amountInput.value = "";
   clearPaymentMessage();
-  elements.paymentConfirmation.hidden = true;
   elements.paymentConfirmation.innerHTML = "";
   elements.receiptContainer.innerHTML = "";
   closeReceipt();
@@ -509,9 +499,12 @@ function bindEvents() {
   elements.cartContainer.addEventListener("click", handleCartClick);
   elements.paymentForm.addEventListener("submit", handlePaymentSubmit);
   elements.amountInput.addEventListener("input", clearPaymentMessage);
-  elements.newTransactionButton.addEventListener("click", startNewTransaction);
-  elements.paymentConfirmation.addEventListener("click", handleConfirmationClick);
+  // "Next Order" buttons start a new transaction for the next customer
+  elements.nextOrderButton.addEventListener("click", startNewTransaction);
+  elements.nextOrderPanelButton.addEventListener("click", startNewTransaction);
+  elements.viewReceiptButton.addEventListener("click", openReceipt);
   elements.closeReceiptButton.addEventListener("click", closeReceipt);
+  elements.closeReceiptSecondaryButton.addEventListener("click", closeReceipt);
   elements.receiptDialog.addEventListener("click", handleDialogBackdropClick);
   // The Esc key closes a <dialog> automatically
 }

@@ -54,7 +54,14 @@
           </div>
           <p id="payment-message" class="message message-error" role="alert" hidden></p>
         </form>
-        <div id="payment-confirmation" class="confirmation" hidden></div>
+        <!-- Shown after payment, in case the receipt overlay was closed -->
+        <div id="paid-actions" class="paid-actions" hidden>
+          <p class="paid-note">✓ Order paid. The cart is locked until the next order.</p>
+          <div class="paid-buttons">
+            <button type="button" id="view-receipt" class="btn btn-secondary">View Receipt</button>
+            <button type="button" id="next-order-panel" class="btn btn-primary">Next Order</button>
+          </div>
+        </div>
       </section>
     </div>
 
@@ -67,16 +74,19 @@
 
   </main>
 
-  <!-- ===== Receipt overlay (Step 7): opens after a successful payment ===== -->
+  <!-- ===== Payment confirmation + receipt overlay (Steps 6-7): opens after a successful payment ===== -->
   <dialog id="receipt-dialog" class="receipt-dialog" aria-labelledby="receipt-title">
     <div class="dialog-body">
       <div class="dialog-header">
-        <h2 id="receipt-title" class="card-title">Receipt</h2>
+        <h2 id="receipt-title" class="card-title">Payment Confirmation</h2>
         <button type="button" id="close-receipt" class="btn-close" aria-label="Close receipt">✕</button>
       </div>
+      <div id="payment-confirmation" class="confirmation"></div>
       <div id="receipt-container"></div>
       <div class="dialog-actions">
-        <button type="button" id="new-transaction" class="btn btn-primary">New Transaction</button>
+        <button type="button" id="close-receipt-secondary" class="btn btn-secondary">Close</button>
+        <!-- Starts a new transaction for the next customer -->
+        <button type="button" id="next-order" class="btn btn-primary">Next Order</button>
       </div>
     </div>
   </dialog>
